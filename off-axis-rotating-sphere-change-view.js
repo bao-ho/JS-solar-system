@@ -44,8 +44,8 @@
 
     // Only to create moon
     if (Dm) {
-      x += Dm * Math.cos(D * 2);
-      z += Dm * Math.sin(D * 2);
+      x += Dm * Math.cos(D);
+      z += Dm * Math.sin(D);
     }
 
     return { x, y, z };
@@ -160,7 +160,6 @@
         render();
       },
       drawTrace() {
-        ctx.fillStyle = color + 075 + ")";
         for (let E = 0; E < Math.PI * 2; E += 0.1) {
           const point = transform({ x0: X, y0: 0, p: E, D: 0, A });
           const ooz = 1 / (K2 + point.z); // one over z
@@ -173,7 +172,24 @@
             (yMax - yMin);
           const xp = u + width / 2;
           const yp = height / 2 - v;
+          ctx.fillStyle = color + 075 + ")";
           ctx.fillRect(xp, yp, 2, 2);
+
+          // Moon
+          // if (name === "Earth" && moon) {
+          //   const point = transform({ x0: X, y0: 0, p: E, D: 0, A });
+          //   const ooz = 1 / (K2 + point.z); // one over z
+          //   const u =
+          //     (width * (K1 * ooz * point.x - 0.5 * (xMax + xMin))) /
+          //     (xMax - xMin);
+          //   const v =
+          //     (height * (K1 * ooz * point.y - 0.5 * (yMax + yMin))) /
+          //     (yMax - yMin);
+          //   const xp = u + width / 2;
+          //   const yp = height / 2 - v;
+          //   ctx.fillStyle = "rgba(255,255,255," + 075 + ")";
+          //   ctx.fillRect(xp, yp, 2, 2);
+          // }
         }
       },
     };
