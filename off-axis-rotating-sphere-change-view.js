@@ -6,6 +6,7 @@
   const { width, height } = ctx.canvas;
   let solarSystem;
   let traces = false;
+  let moon = false;
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, width, height);
   const homeDataView = {
@@ -22,7 +23,7 @@
     dataView: homeDataView,
   };
   // Rotate p around Oy, translate X along Ox, rotate D around Oy, rotate A around Ox
-  const transform = ({ x0, y0, X = 0, p, D, A }) => {
+  const transform = ({ x0, y0, X = 0, p, D, A, Dm }) => {
     const sp = Math.sin(p);
     const cp = Math.cos(p);
     const x1 = x0 * cp + X;
@@ -37,9 +38,15 @@
 
     const ca = Math.cos(A);
     const sa = Math.sin(A);
-    const x = x2;
+    let x = x2;
     const y = y2 * ca - z2 * sa;
-    const z = y2 * sa + z2 * ca;
+    let z = y2 * sa + z2 * ca;
+
+    // Only to create moon
+    if (Dm) {
+      x += Dm * Math.cos(D * 2);
+      z += Dm * Math.sin(D * 2);
+    }
 
     return { x, y, z };
   };
@@ -86,6 +93,53 @@
             ctx.fillStyle = color + L + ")";
             ctx.fillRect(xp, yp, 2, 2);
           }
+
+          // Moon
+          if (name === "Earth" && moon) {
+            // i <=> phi
+            const ox = (R1 / 2) * ct;
+            const oy = (R1 / 2) * st;
+            const point = transform({
+              x0: ox,
+              y0: oy,
+              X,
+              p: i + C,
+              D,
+              A,
+              Dm: X / 5,
+            });
+            const ooz = 1 / (K2 + point.z); // one over z
+            const { xMin, xMax, yMin, yMax } = viewState.dataView;
+            const u =
+              (width * (K1 * ooz * point.x - 0.5 * (xMax + xMin))) /
+              (xMax - xMin);
+            const v =
+              (height * (K1 * ooz * point.y - 0.5 * (yMax + yMin))) /
+              (yMax - yMin);
+            const xp = u + width / 2;
+            const yp = height / 2 - v;
+            const normalVector = transform({ x0: ct, y0: st, p: i + C, D, A });
+
+            // TODO: fix calculation of L
+            let L;
+            if (name === "Sun" || lightSource === "parallel") {
+              L = normalVector.y - normalVector.z;
+            } else {
+              const normDistance = Math.sqrt(
+                point.x * point.x + point.y * point.y + point.z * point.z
+              );
+              L =
+                -(
+                  normalVector.x * point.x +
+                  normalVector.y * point.y +
+                  normalVector.z * point.z
+                ) / normDistance;
+            }
+            if (L > 0) {
+              ctx.fillStyle = "rgba(255,255,255," + L + ")";
+              ctx.fillRect(xp, yp, 2, 2);
+            }
+          }
         }
       }
     };
@@ -106,7 +160,7 @@
         render();
       },
       drawTrace() {
-        ctx.fillStyle = color + 0.5 + ")";
+        ctx.fillStyle = color + 075 + ")";
         for (let E = 0; E < Math.PI * 2; E += 0.1) {
           const point = transform({ x0: X, y0: 0, p: E, D: 0, A });
           const ooz = 1 / (K2 + point.z); // one over z
@@ -197,12 +251,13 @@
   };
 
   window.toggleTraces = function () {
-    if (traces === false) {
-      traces = true;
-    } else {
-      traces = false;
-    }
+    traces = !traces;
   };
+
+  window.showMoon = function () {
+    moon = !moon;
+  };
+
   window.resetToHomeView = function () {
     viewState.scale = 1;
     viewState.dataView = homeDataView;
