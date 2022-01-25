@@ -102,7 +102,7 @@
     moon = !moon;
   };
 
-  window.resetToHomeView = function () {
+  window.zoomExtent = function () {
     viewState.scale = 1;
     viewState.dataView = homeDataView;
   };
@@ -110,7 +110,15 @@
   // GRAPHICS
 
   // Rotate p around y axis, translate X along x axis, rotate D around y axis, rotate A around x axis
-  const transform = ({ x0, y0, X = 0, p, rotationAroundYAxis, rotationAroundXAxis, Dm }) => {
+  const transform = ({
+    x0,
+    y0,
+    X = 0,
+    p,
+    rotationAroundYAxis,
+    rotationAroundXAxis,
+    Dm,
+  }) => {
     const sp = Math.sin(p);
     const cp = Math.cos(p);
     const x1 = x0 * cp + X;
@@ -160,7 +168,14 @@
           // i <=> phi
           const ox = radius * ct;
           const oy = radius * st;
-          const point = transform({ x0: ox, y0: oy, X, p: i + C, rotationAroundYAxis, rotationAroundXAxis });
+          const point = transform({
+            x0: ox,
+            y0: oy,
+            X,
+            p: i + C,
+            rotationAroundYAxis,
+            rotationAroundXAxis,
+          });
           const ooz = 1 / (eyeToSphere + point.z); // one over z
           const { xMin, xMax, yMin, yMax } = viewState.dataView;
           const u =
@@ -171,7 +186,13 @@
             (yMax - yMin);
           const xp = u + width / 2;
           const yp = height / 2 - v;
-          const normalVector = transform({ x0: ct, y0: st, p: i + C, rotationAroundYAxis, rotationAroundXAxis });
+          const normalVector = transform({
+            x0: ct,
+            y0: st,
+            p: i + C,
+            rotationAroundYAxis,
+            rotationAroundXAxis,
+          });
           let L;
           if (name === "Sun" || lightSource === "parallel") {
             L = normalVector.y - normalVector.z;
@@ -215,7 +236,13 @@
               (yMax - yMin);
             const xp = u + width / 2;
             const yp = height / 2 - v;
-            const normalVector = transform({ x0: ct, y0: st, p: i + C, rotationAroundYAxis, rotationAroundXAxis });
+            const normalVector = transform({
+              x0: ct,
+              y0: st,
+              p: i + C,
+              rotationAroundYAxis,
+              rotationAroundXAxis,
+            });
 
             // TODO: fix calculation of L
             let L;
@@ -249,12 +276,20 @@
       },
       animate() {
         C += deltaC ? deltaC : 0;
-        rotationAroundYAxis += resolutionAroundYAxis ? resolutionAroundYAxis : 0;
+        rotationAroundYAxis += resolutionAroundYAxis
+          ? resolutionAroundYAxis
+          : 0;
         render();
       },
       drawTrace() {
         for (let E = 0; E < Math.PI * 2; E += 0.1) {
-          const point = transform({ x0: X, y0: 0, p: E, rotationAroundYAxis: 0, rotationAroundXAxis });
+          const point = transform({
+            x0: X,
+            y0: 0,
+            p: E,
+            rotationAroundYAxis: 0,
+            rotationAroundXAxis,
+          });
           const ooz = 1 / (eyeToSphere + point.z); // one over z
           const { xMin, xMax, yMin, yMax } = viewState.dataView;
           const u =
